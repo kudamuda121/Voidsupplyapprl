@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voidsupply - Toko Baju Kekinian</title>
+    <style>
+        /* --- 1. PENGATURAN DASAR --- */
+        :root {
+            --primary-color: #1a1a1a;
+            --accent-color: #e74c3c;
+            --bg-color: #f4f4f4;
+            --card-bg: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #333;
+        }
+
+        /* --- 2. HEADER & NAVIGASI --- */
+        header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between; /* Kiri dan Kanan mentok */
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        /* Grup Kiri: Logo + Judul */
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            object-fit: contain;
+            background-color: white; /* Opsional: biar logo terlihat jelas */
+            border-radius: 50%;
+        }
+
+        header h1 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        /* Grup Kanan: Menu */
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-size: 0.9rem;
+            transition: color 0.3s;
+        }
+        nav a:hover { color: var(--accent-color); }
+
+        /* --- 3. HERO BANNER --- */
+        .hero {
+            /* Ganti URL gambar background jika mau */
+            background-image: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('banner2.jpg');
+            background-size: cover;
+            background-position: center;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-align: center;
+        }
+
+        .hero h2 { font-size: 2.5rem; margin-bottom: 10px; }
+        .hero p { font-size: 1.2rem; }
+
+        /* --- 4. LAYOUT KATALOG --- */
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+        }
+
+        /* Judul Per Kategori */
+        .category-title {
+            font-size: 1.5rem;
+            color: #333;
+            margin-top: 50px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        /* Grid System */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+
+        /* --- 5. KARTU PRODUK (PENTING) --- */
+        .product-card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            overflow: hidden; /* Agar gambar tidak keluar kotak */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            position: relative; /* PENTING: Agar tombol quantity bisa melayang di dalamnya */
+        }
+
+        .product-card:hover {
+            transform: translateY(-5px); /* Efek naik dikit saat hover */
+        }
+
+        .product-image {
+            width: 100%;
+            height: 300px; /* Tinggi gambar seragam */
+            object-fit: cover;
+            background-color: #eee;
+        }
+
+        .product-info {
+            padding: 20px;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background-color: white;
+            z-index: 20; /* Pastikan info ada di atas */
+        }
+
+        .product-title { font-size: 1.1rem; font-weight: bold; margin-bottom: 5px; }
+        .product-price { color: var(--accent-color); font-size: 1.2rem; font-weight: bold; margin-bottom: 15px; }
+
+        .btn-buy {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .btn-buy:hover { background-color: #333; }
+
+        /* --- 6. FITUR JUMLAH MELAYANG (FLOATING) --- */
+        .qty-container {
+            position: absolute; /* KUNCI: Melayang */
+            top: 240px;         /* Posisi vertikal (sesuaikan dengan tinggi gambar) */
+            left: 50%;
+            transform: translate(-50%, 20px); /* Posisi awal agak turun */
+            
+            background-color: white;
+            padding: 5px 15px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            
+            /* Sembunyi dulu */
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 30; /* Paling depan */
+        }
+
+        /* Efek Muncul Saat Hover */
+        .product-card:hover .qty-container {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -10px); /* Naik ke atas sedikit */
+        }
+
+        .btn-qty-control {
+            width: 25px; height: 25px;
+            background-color: var(--primary-color);
+            color: white; border: none; border-radius: 50%;
+            cursor: pointer; font-weight: bold;
+            display: flex; align-items: center; justify-content: center;
+        }
+        
+        .input-qty-display {
+            width: 30px; text-align: center; border: none;
+            font-weight: bold; font-size: 1rem;
+        }
+
+        /* --- 7. FOOTER --- */
+        footer {
+            background-color: var(--primary-color);
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 50px;
+        }
+
+        /* Responsif HP */
+        @media (max-width: 600px) {
+            .product-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+            .product-image { height: 200px; }
+            .qty-container { top: 150px; } /* Sesuaikan posisi tombol di HP */
+            .header-left h1 { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="header-left">
+            <img src="unnamed.jpg" alt="Logo" class="logo-icon">
+            <h1>Voidsupply</h1>
+        </div>
+        <nav>
+            <a href="#">Home</a>
+            <a href="#katalog">Katalog</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h2>Selamat Datang Di Toko Kami :)</h2>
+        <p>Create the unseen. Wear potential</p>
+    </section>
+
+    <div class="container" id="katalog">
+        <h2 class="section-title">Katalog Produk</h2>
+
+        <h3 class="category-title">Koleksi T-Shirt</h3>
+        <div class="product-grid">
+            
+            <div class="product-card">
+                <img src="Kaos1.png" alt="Kaos 1" class="product-image">
+                
+                <div class="qty-container">
+                    <button class="btn-qty-control" onclick="kurangQty('qty1')">-</button>
+                    <input type="text" id="qty1" class="input-qty-display" value="1" readonly>
+                    <button class="btn-qty-control" onclick="tambahQty('qty1')">+</button>
+                </div>
+
+                <div class="product-info">
+                    <h3 class="product-title">Star Cosmic</h3>
+                    <p class="product-price">Rp 95.000</p>
+                    <button class="btn-buy" onclick="beliProduk('Star Cosmic', 95000, 'qty1')">Beli Sekarang</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <img src="kaos2.png" alt="Kaos 2" class="product-image">
+                
+                <div class="qty-container">
+                    <button class="btn-qty-control" onclick="kurangQty('qty2')">-</button>
+                    <input type="text" id="qty2" class="input-qty-display" value="1" readonly>
+                    <button class="btn-qty-control" onclick="tambahQty('qty2')">+</button>
+                </div>
+
+                <div class="product-info">
+                    <h3 class="product-title">Street</h3>
+                    <p class="product-price">Rp 95.000</p>
+                    <button class="btn-buy" onclick="beliProduk('Street', 95000, 'qty2')">Beli Sekarang</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <img src="kaos3.png" alt="Kaos 3" class="product-image">
+                
+                <div class="qty-container">
+                    <button class="btn-qty-control" onclick="kurangQty('qty3')">-</button>
+                    <input type="text" id="qty3" class="input-qty-display" value="1" readonly>
+                    <button class="btn-qty-control" onclick="tambahQty('qty3')">+</button>
+                </div>
+
+                <div class="product-info">
+                    <h3 class="product-title">Nebula</h3>
+                    <p class="product-price">Rp 95.000</p>
+                    <button class="btn-buy" onclick="beliProduk('Nebula', 95000, 'qty3')">Beli Sekarang</button>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="category-title">Koleksi Jeans</h3>
+        <div class="product-grid">
+            
+            <div class="product-card">
+                <img src="Jeans1.png" alt="Jeans 1" class="product-image">
+                
+                <div class="qty-container">
+                    <button class="btn-qty-control" onclick="kurangQty('qty4')">-</button>
+                    <input type="text" id="qty4" class="input-qty-display" value="1" readonly>
+                    <button class="btn-qty-control" onclick="tambahQty('qty4')">+</button>
+                </div>
+
+                <div class="product-info">
+                    <h3 class="product-title">Regular</h3>
+                    <p class="product-price">Rp 150.000</p>
+                    <button class="btn-buy" onclick="beliProduk('Regular', 150000, 'qty4')">Beli Sekarang</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <img src="Jeans2.png" alt="Jeans 2" class="product-image">
+                
+                <div class="qty-container">
+                    <button class="btn-qty-control" onclick="kurangQty('qty5')">-</button>
+                    <input type="text" id="qty5" class="input-qty-display" value="1" readonly>
+                    <button class="btn-qty-control" onclick="tambahQty('qty5')">+</button>
+                </div>
+
+                <div class="product-info">
+                    <h3 class="product-title">Baggy</h3>
+                    <p class="product-price">Rp 170.000</p>
+                    <button class="btn-buy" onclick="beliProduk('Baggy', 170000, 'qty5')">Beli Sekarang</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <img src="Jeans3.png" alt="Jeans 3" class="product-image">
+                
+                <div class="qty-container">
+                    <button class="btn-qty-control" onclick="kurangQty('qty6')">-</button>
+                    <input type="text" id="qty6" class="input-qty-display" value="1" readonly>
+                    <button class="btn-qty-control" onclick="tambahQty('qty6')">+</button>
+                </div>
+
+                <div class="product-info">
+                    <h3 class="product-title">Cutbray</h3>
+                    <p class="product-price">Rp 130.000</p>
+                    <button class="btn-buy" onclick="beliProduk('cutbray', 130000, 'qty6')">Beli Sekarang</button>
+                </div>
+            </div>
+        </div>
+
+        <h3 class="category-title">Koleksi Hoodie</h3>
+        <div class="product-grid">
+            
+            <div class="product-card">
+                <img src="Hoodie2.png" alt="Hoodie 1" class="product-image">
+                
+                <div class="qty-container">
+                    <button class="btn-qty-control" onclick="kurangQty('qty7')">-</button>
+                    <input type="text" id="qty7" class="input-qty-display" value="1" readonly>
+                    <button class="btn-qty-control" onclick="tambahQty('qty7')">+</button>
+                </div>
+
+                <div class="product-info">
+                    <h3 class="product-title">Pullover</h3>
+                    <p class="product-price">Rp 200.000</p>
+                    <button class="btn-buy" onclick="beliProduk('Pullover', 200000, 'qty7')">Beli Sekarang</button>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <img src="Hoodie3.png" alt="Hoodie 2" class="product-image">
+                
+                <div class="qty-container">
+                    <button class="btn-qty-control" onclick="kurangQty('qty8')">-</button>
+                    <input type="text" id="qty8" class="input-qty-display" value="1" readonly>
+                    <button class="btn-qty-control" onclick="tambahQty('qty8')">+</button>
+                </div>
+
+                <div class="product-info">
+                    <h3 class="product-title">Zipper</h3>
+                    <p class="product-price">Rp 220.000</p>
+                    <button class="btn-buy" onclick="beliProduk('Zipper', 249000, 'qty8')">Beli Sekarang</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 Voidsupply. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // Fungsi Tambah Angka
+        function tambahQty(idInput) {
+            let input = document.getElementById(idInput);
+            let nilai = parseInt(input.value);
+            input.value = nilai + 1;
+        }
+
+        // Fungsi Kurang Angka
+        function kurangQty(idInput) {
+            let input = document.getElementById(idInput);
+            let nilai = parseInt(input.value);
+            if (nilai > 1) {
+                input.value = nilai - 1;
+            }
+        }
+
+        // Fungsi Checkout WhatsApp
+        function beliProduk(namaProduk, harga, idInput) {
+            let input = document.getElementById(idInput);
+            let jumlah = input.value;
+            let totalHarga = harga * jumlah;
+
+            // Ganti nomor ini dengan nomor WA Anda (format: 628...)
+            const nomorWA = "6281230129885"; 
+            
+            const pesan = `Halo Admin Voidsupply Yang GANTENG, saya mau pesan:\n\n*${jumlah}x ${namaProduk}*\nTotal Harga: Rp ${totalHarga.toLocaleString('id-ID')}\n\nApakah stok masih tersedia?`;
+            
+            const linkWA = `https://wa.me/${nomorWA}?text=${encodeURIComponent(pesan)}`;
+            
+            window.open(linkWA, '_blank');
+        }
+    </script>
+
+</body>
+</html>
